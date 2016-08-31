@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block body %}
+  <h2>最近の未承認プロジェクト</h2>
+
+	<table class="sheet">
+		<thead>
+			<tr>
+				<th>プロジェクト名</th>
+				<th width="120px">登録日</th>
+				{[if $role.edit]}
+				<th width="80px">操作</th>
+				{[/if]}
+			</tr>
+		</thead>
+
+		<tbody>
+		{% if projects %}
+			{% for project in projects %}
+			<tr>
+				<td>{{ project.title }}</a></td>
+				<td>{{ project.reg_datetime }}</a></td>
+				<!-- {[if $role.edit]} -->
+				<td>
+					<a href="/admin/project/approve?id={{ project.id }}" class="confirm block" data-alert="本当に承認してもよろしいですか？">承認</a>
+					<a href="#" class="block nonApproval" data-id="{{ project.id }}">非承認</a>
+				</td>
+				<!-- {[/if]} -->
+			</tr>
+			{% endfor %}
+		{% else %}
+			<!-- <tr><td colspan="3" class="center">{[gentext type="no_result"]}</td></tr> -->
+		{% endif %}
+		</tbody>
+	</table>
+
+  <a href="{{ url_for('user_create') }}">create user</a>
+{% endblock body %}

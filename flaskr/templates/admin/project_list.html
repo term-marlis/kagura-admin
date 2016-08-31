@@ -1,0 +1,93 @@
+{% block meta %}
+  <title>最近の未承認プロジェクト</title>
+  <meta property="og:title" content="最近の未承認プロジェクト">
+{% endblock %}
+
+{% block container %}
+  <form id="basic_form" class="ui form" method="post"
+        action="{{ url_for('views.project_list') }}"
+        enctype="multipart/form-data">
+    {{ basic_form.hidden_tag() }}
+    <div class="ui stackable grid">
+      <div class="ui eight wide column">
+        <div class="ui field">
+          {{ basic_form.id.label }}
+          {{ basic_form.id(placeholder='Id', maxlength=5) }}
+        </div>
+      </div>
+      <div class="ui field">
+        {{ basic_form.top_pickup.label }}
+        <div class="ui checkbox">
+          {{ basic_form.top_pickup }}
+          {{ basic_form.top_pickup.label }}
+        </div>
+      </div>
+      <div class="ui eight wide column">
+        <div class="ui field">
+          {{ basic_form.popular_order.label }}
+          {{ basic_form.popular_order(placeholder='PopularOrder', maxlength=5) }}
+        </div>
+      </div>
+      <div class="ui eight wide column">
+        <div class="ui two fields">
+          <div id="type_field" class="ui field">
+            {{ basic_form.public_status.label }}
+            {{ basic_form.public_status(class='ui dropdown') }}
+          </div>
+          <div id="type_field" class="ui field">
+            {{ basic_form.target_status.label }}
+            {{ basic_form.target_status(class='ui dropdown') }}
+          </div>
+          <div id="type_field" class="ui field">
+            {{ basic_form.is_approval.label }}
+            {{ basic_form.is_approval(class='ui dropdown') }}
+          </div>
+        </div>
+        <div class="ui eight wide column">
+          <div class="ui field">
+            {{ basic_form.keyword.label }}
+            {{ basic_form.keyword(placeholder='Keyword', maxlength=5) }}
+          </div>
+        </div>
+        {{ basic_form.submit(class='ui right floated gold button') }}
+      </div>
+    </div>
+  </form>
+
+	<table class="sheet">
+		<thead>
+			<tr>
+				<th>プロジェクト名</th>
+        <th>ステータス</th>
+				<th>達成状況</th>
+        <th>承認</th>
+        <th>トップ</th>
+        <th>目標金額</th>
+        <th>話題</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+
+		<tbody>
+		{% if projects %}
+			{% for project in projects %}
+			<tr>
+				<td>{{ project.title }}</a></td>
+				<td>{{ project.public_status }}</td>
+        <td>{{ project.target_status }}</td>
+        <td>{{ project.is_approval }}</td>
+        <td></td>
+        <td>{{ project.target_amount }}</td>
+        <td>{{ project.popular_order }}</td>
+				<td>
+					<a href="/admin/project/approve?id={{ project.id }}" class="confirm block" data-alert="本当に承認してもよろしいですか？">承認</a>
+					<a href="#" class="block nonApproval" data-id="{{ project.id }}">非承認</a>
+				</td>
+			</tr>
+			{% endfor %}
+		{% else %}
+		{% endif %}
+		</tbody>
+	</table>
+
+  <a href="{{ url_for('user_create') }}">create user</a>{% endblock %}
