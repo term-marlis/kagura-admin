@@ -40,7 +40,7 @@ def admin_delete(admin_id):
     return jsonify({'status': 'OK'})
 
 
-@app.route('/admin/<int:admin_id>/edit')
+@app.route('/admin/<int:admin_id>/edit', methods=['GET', 'POST'])
 def admin_edit(admin_id):
     pass
 
@@ -55,7 +55,7 @@ def download():
     pass
 
 
-@app.route('/admin/information/<int:information_id>/delete')
+@app.route('/admin/information/<int:information_id>/delete', methods=['DELETE'])
 def information_delete(information_id):
     information = Information.query.get(information_id)
     if admin is None:
@@ -67,7 +67,7 @@ def information_delete(information_id):
     return jsonify({'status': 'OK'})
 
 
-@app.route('/admin/information/<int:information_id>/edit')
+@app.route('/admin/information/<int:information_id>/edit', methods=['GET', 'POST'])
 def information_edit():
     pass
 
@@ -116,10 +116,31 @@ def project_delete(project_id):
 
 @app.route('/admin/project/<int:project_id>/status/edit', methods=['GET', 'POST'])
 def project_status_edit(project_id):
+
+    basic_form = ProjectBasicForm(request.form)
+    data = converter.project_form_to_api_project(basic_form)
+
     project = Project.query.get(project_id)
     if project is None:
         abort(404)
     if request.method == 'POST':
+
+
+        if projct.is_approval and projct.is_approval != request.form['is_approval']:
+            # 承認メール送信
+            if projct.is_approval == 1:
+                pass
+            if projct.is_approval == 2:
+                pass
+        if projct.is_approval and projct.public_status != request.form['public_status']:
+            #
+            if projct.public_status == 2:
+                pass
+            if projct.public_status != 2:
+                project.popular_order = 0
+        if projct.is_delete and projct.is_delete == 1:
+            project.popular_order = 0
+
         project.name=request.form['name']
         project.email=request.form['email']
         if request.form['password']:
@@ -130,7 +151,7 @@ def project_status_edit(project_id):
     return render_template('user/edit.html', user=user)
 
 
-@app.route('/admin/project/<int:project_id>/edit')
+@app.route('/admin/project/<int:project_id>/edit', methods=['GET', 'POST'])
 def project_edit():
     pass
 
@@ -158,7 +179,7 @@ def project_memo_detal():
     pass
 
 
-@app.route('/admin/project/republic')
+@app.route('/admin/project/republic', methods=['PUT'])
 def project_republic():
     pass
 
@@ -173,7 +194,7 @@ def project_success_list():
     pass
 
 
-@app.route('/admin/project/support/edit')
+@app.route('/admin/project/support/edit', methods=['GET', 'POST'])
 def project_support_edit():
     pass
 
@@ -183,7 +204,7 @@ def project_supportor():
     pass
 
 
-@app.route('/admin/project/unpublic')
+@app.route('/admin/project/unpublic', methods=['PUT'])
 def project_unpublic():
     pass
 
@@ -210,7 +231,7 @@ def user_delete(user_id):
     return jsonify({'status': 'OK'})
 
 
-@app.route('/admin/users/<int:user_id>/status/edit')
+@app.route('/admin/users/<int:user_id>/status/edit', methods=['GET', 'POST'])
 def user_status_edit():
     pass
 
@@ -258,4 +279,3 @@ def user_create():
 @app.route('/admin/user/projects/list')
 def user_project_list():
     pass
-
