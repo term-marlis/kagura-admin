@@ -7,6 +7,7 @@ from flaskr import app, db
 from flaskr.models import User, Project, Information, Admin
 from flaskr import converter
 from flaskr.form import ProjectBasicForm
+from flaskr import decorator
 
 
 
@@ -21,33 +22,50 @@ from flaskr.form import ProjectBasicForm
 #     flash('New entry was successfully posted')
 #     return redirect(url_for('show_entries'))
 
-
-@app.route('/admin/')
+@app.route('/')
+@decorator.managed_session()
 def top():
+    """ トップ画面 """
     projects = Project.query.filter_by(is_approval=0).order_by(Project.reg_datetime.desc()).limit(10).all()
     return render_template('admin/index.html', projects=projects)
 
 
 @app.route('/admin/<int:admin_id>/delete', methods=['DELETE'])
+@decorator.managed_session()
 def admin_delete(admin_id):
+    """ Admin削除 """
     admin = Admin.query.get(admin_id)
     if admin is None:
-        response = jsonify({'status': 'Not Found'})
-        response.status_code = 404
-        return response
+        return render_template('admin/admin_list.html', admin=None)
     db.session.delete(admin)
-    db.session.commit()
-    return jsonify({'status': 'OK'})
+    return render_template('admin/admin_list.html', admin=admin)
 
-
-@app.route('/admin/<int:admin_id>/edit', methods=['GET', 'POST'])
+@app.route('/admin/<int:admin_id>/edit', methods=['POST'])
+@decorator.managed_session()
 def admin_edit(admin_id):
+    """ passwordリセット """
     pass
 
 
-@app.route('/admin/list')
+@app.route('/admin/list', methods=['GET', 'POST'])
 def admin_list():
-    pass
+    print('sss')
+    admin = Admin.query
+    print(request.form)
+
+    input_login_email = None
+    input_role = None
+    if request.form:
+        if request.form['login_email']:
+            # keyword
+            input_login_email = request.form['login_email']
+            admin = admin.filter(Admin.login_email.like('%' + str(request.form['login_email']) + '%'))
+        if request.form['role']:
+            # role
+            input_role = request.form['role']
+            admin = admin.filter(Admin.role == request.form['role'])
+    admins = admin.all()
+    return render_template('admin/admin_list.html', admins=admins, input_login_email=input_login_email, input_role=input_role)
 
 
 @app.route('/admin/download')
@@ -55,77 +73,85 @@ def download():
     pass
 
 
-@app.route('/admin/information/<int:information_id>/delete', methods=['DELETE'])
-def information_delete(information_id):
-    information = Information.query.get(information_id)
-    if admin is None:
-        response = jsonify({'status': 'Not Found'})
-        response.status_code = 404
-        return response
-    db.session.delete(information)
-    db.session.commit()
-    return jsonify({'status': 'OK'})
+# @app.route('/admin/information/<int:information_id>/delete', methods=['DELETE'])
+# @decorator.managed_session()
+# def information_delete(information_id):
+#     information = Information.query.get(information_id)
+#     if information is None:
+#         return render_template('information_list.html', information=None)
+#         # response = jsonify({'status': 'Not Found'})
+#         # response.status_code = 404
+#         # return response
+#     db.session.delete(information)
+#     # return jsonify({'status': 'OK'})
+#     return render_template('information_list.html', information=information)
+#
+#
+# @app.route('/admin/information/<int:information_id>/edit', methods=['POST'])
+# @decorator.managed_session()
+# def information_edit():
+#     pass
+#
+#
+# @app.route('/admin/information/list')
+# def information_list():
+#     pass
+#
+#
+# @app.route('/admin/information/preview')
+# def information_preview():
+#     pass
 
 
-@app.route('/admin/information/<int:information_id>/edit', methods=['GET', 'POST'])
-def information_edit():
-    pass
-
-
-@app.route('/admin/information/list')
-def information_list():
-    pass
-
-
-@app.route('/admin/information/preview')
-def information_preview():
-    pass
-
-
-@app.route('/admin/login/user')
+@app.route('/login/user')
 def login_user():
     pass
 
 
-@app.route('/admin/login')
+@app.route('/login')
 def login():
     pass
 
 
-@app.route('/admin/logout')
+@app.route('/logout')
 def logout():
     pass
 
 
-@app.route('/admin/project/approve')
-def project_approve():
-    pass
+@app.route('/project/approve')
+@decorator.managed_session()
+def project_approve(project_id):
+    project = Project.query.get(project_id)
+    if project is None:
+        return render_template('admin/project_list.html', project=None)
+    project.is_approval = 1
+    project.public_status = 2
+    db.session.add(project)
+    return render_template('admin/project_list.html', project=project)
 
 
-@app.route('/admin/project/<int:project_id>/delete', methods=['DELETE'])
+@app.route('/project/<int:project_id>/delete', methods=['DELETE'])
+@decorator.managed_session()
 def project_delete(project_id):
     project = Project.query.get(project_id)
     if project is None:
-        response = jsonify({'status': 'Not Found'})
-        response.status_code = 404
-        return response
+        return render_template('project_list.html', project=None)
     db.session.delete(project)
-    db.session.commit()
-    return jsonify({'status': 'OK'})
+    return render_template('admin/project_list.html', project=project)
 
 
-@app.route('/admin/project/<int:project_id>/status/edit', methods=['GET', 'POST'])
+@app.route('/project/<int:project_id>/status/edit', methods=['POST'])
+@decorator.managed_session()
 def project_status_edit(project_id):
 
-    basic_form = ProjectBasicForm(request.form)
-    data = converter.project_form_to_api_project(basic_form)
+    # 入力チェック
+    # basic_form = ProjectBasicForm(request.form)
+    # data = converter.project_form_to_api_project(basic_form)
 
     project = Project.query.get(project_id)
     if project is None:
         abort(404)
     if request.method == 'POST':
-
-
         if projct.is_approval and projct.is_approval != request.form['is_approval']:
             # 承認メール送信
             if projct.is_approval == 1:
@@ -146,27 +172,27 @@ def project_status_edit(project_id):
         if request.form['password']:
             user.password=request.form['password']
         db.session.add(project)
-        db.session.commit()
-        return redirect(url_for('user_detail', user_id=user_id))
-    return render_template('user/edit.html', user=user)
+        return redirect(url_for('/admin/users/%s' % user_id))
+    return render_template('admin/user_edit.html', user=user)
 
 
-@app.route('/admin/project/<int:project_id>/edit', methods=['GET', 'POST'])
+@app.route('/project/<int:project_id>/edit', methods=['POST'])
+@decorator.managed_session()
 def project_edit():
     pass
 
 
-@app.route('/admin/project/end/list')
+@app.route('/project/end/list')
 def project_end_list():
     pass
 
 
-@app.route('/admin/project/no_approve/list')
+@app.route('/project/no_approve/list')
 def project_no_approve_list():
     pass
 
 
-@app.route('/admin/project/list')
+@app.route('/project/list')
 def project_list():
     basic_form = ProjectBasicForm(request.form)
     project_ = converter.project_form_to_api_project(basic_form)
@@ -174,52 +200,56 @@ def project_list():
     return render_template('admin/project_list.html', project=project_)
 
 
-@app.route('/admin/project/memo/detail')
+@app.route('/project/memo/detail')
 def project_memo_detal():
     pass
 
 
-@app.route('/admin/project/republic', methods=['PUT'])
+@app.route('/project/republic', methods=['PUT'])
+@decorator.managed_session()
 def project_republic():
     pass
 
 
-@app.route('/admin/project/running/list')
+@app.route('/project/running/list')
 def project_running_list():
     pass
 
 
-@app.route('/admin/project/sucess/list')
+@app.route('/project/sucess/list')
 def project_success_list():
     pass
 
 
-@app.route('/admin/project/support/edit', methods=['GET', 'POST'])
+@app.route('/project/support/edit', methods=['POST'])
+@decorator.managed_session()
 def project_support_edit():
     pass
 
 
-@app.route('/admin/project/supportor')
+@app.route('/project/supportor')
 def project_supportor():
     pass
 
 
-@app.route('/admin/project/unpublic', methods=['PUT'])
+@app.route('/project/unpublic', methods=['PUT'])
+@decorator.managed_session()
 def project_unpublic():
     pass
 
 
-@app.route('/admin/project/unsuccess/list')
+@app.route('/project/unsuccess/list')
 def project_unsuccess_list():
     pass
 
 
-@app.route('/admin/project/waiting/list')
+@app.route('/project/waiting/list')
 def project_waiting_list():
     pass
 
 
-@app.route('/admin/users/<int:user_id>/delete/', methods=['DELETE'])
+@app.route('/user/<int:user_id>/delete/', methods=['DELETE'])
+@decorator.managed_session()
 def user_delete(user_id):
     user = User.query.get(user_id)
     if user is None:
@@ -227,16 +257,17 @@ def user_delete(user_id):
         response.status_code = 404
         return response
     db.session.delete(user)
-    db.session.commit()
     return jsonify({'status': 'OK'})
 
 
-@app.route('/admin/users/<int:user_id>/status/edit', methods=['GET', 'POST'])
+@app.route('/user/<int:user_id>/status/edit', methods=['POST'])
+@decorator.managed_session()
 def user_status_edit():
     pass
 
 
-@app.route('/admin/users/<int:user_id>/edit/', methods=['GET', 'POST'])
+@app.route('/user/<int:user_id>/edit/', methods=['POST'])
+@decorator.managed_session()
 def user_edit(user_id):
     user = User.query.get(user_id)
     if user is None:
@@ -247,35 +278,67 @@ def user_edit(user_id):
         if request.form['password']:
             user.password=request.form['password']
         db.session.add(user)
-        db.session.commit()
         return redirect(url_for('user_detail', user_id=user_id))
     return render_template('user/edit.html', user=user)
 
 
-@app.route('/admin/users/list')
+@app.route('/user/list')
 def user_list():
+
+    admin = User.query
+    if request.form['gmo_member_id']:
+        # gmo_member_id
+        admin = admin.filter(Admin.role == request.form['gmo_member_id'])
+    if request.form['nick_name']:
+        # nick_name
+        admin = admin.filter(Admin.nick_name.like("%s")) % request.form['nick_name']
+    if request.form['mail']:
+        # mail
+        admin = admin.filter(Admin.mail.like("%s")) % request.form['mail']
+
+    if request.form['start_birthday'] and request.form['end_birthday']:
+        # user birthday
+        admin = admin.filter(User.birthday > request.form['start_birthday'])
+        admin = admin.filter(User.birthday < request.form['end_birthday'])
+    if request.form['gender']:
+        # gender
+        admin = admin.filter(Member.gender == request.form['gender'])
+
+    if request.form['start_reg_datetime'] and request.form['end_reg_datetime']:
+        # user reg_datetime
+        admin = admin.filter(User.reg_datetime > request.form['start_reg_datetime'])
+        admin = admin.filter(User.reg_datetime < request.form['end_reg_datetime'])
+
+    if request.form['user_support_status']:
+        # user_support
+        admin = admin.filter(UserSupport.status == request.form['user_support_status'])
+
+    if request.form['member_status']:
+        # user_support
+        admin = admin.filter(Member.status == request.form['member_status'])
+
     users = User.query.all()
     return render_template('user/list.html', users=users)
 
 
-@app.route('/admin/users/<int:user_id>/')
+@app.route('/user/<int:user_id>/')
 def user_detail(user_id):
     user = User.query.get(user_id)
     return render_template('user/detail.html', user=user)
 
 
-@app.route('/admin/users/create/', methods=['GET', 'POST'])
+@app.route('/user/create/', methods=['GET', 'POST'])
+@decorator.managed_session()
 def user_create():
     if request.method == 'POST':
         user = User(name=request.form['name'],
                     email=request.form['email'],
                     password=request.form['password'])
         db.session.add(user)
-        db.session.commit()
         return redirect(url_for('user_list'))
     return render_template('user/edit.html')
 
 
-@app.route('/admin/user/projects/list')
+@app.route('/user/project/list')
 def user_project_list():
     pass

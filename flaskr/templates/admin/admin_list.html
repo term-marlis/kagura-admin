@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block body %}
+  <h2>最近の未承認プロジェクト</h2>
+
+
+  <h2>{{ 'Edit User' if user else 'Add User'}}</h2>
+  <form action="/admin/list" method="post">
+    <dl>
+      <dt>メール(*):
+      <dd><input type=text size=20 name=login_email value="{{ input_login_email if input_login_email }}">
+      <dt>ロール:
+      <dd><input type=text size=20 name=role value="{{ input_role if input_role }}">
+      <dd><input type=submit value='検索'>
+    </dl>
+  </form>
+
+
+	<table class="sheet">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>ロール</th>
+        <th>名前</th>
+        <th>メール</th>
+        <th>ダウンロード権限</th>
+			</tr>
+		</thead>
+
+		<tbody>
+		{% if admins %}
+			{% for admin in admins %}
+			<tr>
+				<td><a href="{{ url_for('admin_delete', admin_id=admin.id) }}">edit</a><a href="{{ url_for('admin_edit', admin_id=admin.id) }}">del</a>{{ admin.id }}</td>
+        <td>{{ admin.role }}</td>
+				<td>{{ admin.name }}</td>
+        <td>{{ admin.login_email }}</td>
+        <td>{{ admin.download_permission }}</td>
+			</tr>
+			{% endfor %}
+		{% else %}
+		{% endif %}
+		</tbody>
+	</table>
+
+  <a href="{{ url_for('user_create') }}">create user</a>
+{% endblock body %}
