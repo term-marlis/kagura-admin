@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block body %}
+  <h2>{{ 'Edit User' if user else 'Add User'}}</h2>
+  <form action="/admin/{{ admin.id }}/edit" method="post">
+    <dl>
+      <dt>role:
+      <dd><input type=text size=11 name=role value="{{ admin.role if admin }}">
+      <dt>name:
+      <dd><input type=text size=255 name=name value="{{ admin.name if admin }}">
+      <dt>Email:
+      <dd><input type=text size=255 name=login_email value="{{ admin.login_email if admin }}">
+      <dt>password:
+      <dd><input type=password size=20 name=login_pw value="">
+      <dt>password:
+      <dd><input type=text size=11 name=download_permission value="">
+
+
+      <dd><input type=submit value={{ 'save' if user else 'create' }}>
+    </dl>
+  </form>
+{% endblock %}

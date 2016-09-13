@@ -1,15 +1,16 @@
 from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify
-
-# from flask import Blueprint, render_template, request, url_for, flash, current_app, g, jsonify, session, Response, abort
-
 from flaskr import app, db
 from flaskr.models import User, Project, Information, Admin
 from flaskr import converter
 from flaskr.form import ProjectBasicForm
 from flaskr import decorator
 
+from flask import current_app
+from sqlalchemy.sql import select
 
+from flaskr.sql_parts.abstract_parts import AbstractParts
+from flaskr.sql_parts.project_list import ProjectList
 
 # @app.route('/add', methods=['POST'])
 # def add_entry():
@@ -73,36 +74,6 @@ def download():
     pass
 
 
-# @app.route('/admin/information/<int:information_id>/delete', methods=['DELETE'])
-# @decorator.managed_session()
-# def information_delete(information_id):
-#     information = Information.query.get(information_id)
-#     if information is None:
-#         return render_template('information_list.html', information=None)
-#         # response = jsonify({'status': 'Not Found'})
-#         # response.status_code = 404
-#         # return response
-#     db.session.delete(information)
-#     # return jsonify({'status': 'OK'})
-#     return render_template('information_list.html', information=information)
-#
-#
-# @app.route('/admin/information/<int:information_id>/edit', methods=['POST'])
-# @decorator.managed_session()
-# def information_edit():
-#     pass
-#
-#
-# @app.route('/admin/information/list')
-# def information_list():
-#     pass
-#
-#
-# @app.route('/admin/information/preview')
-# def information_preview():
-#     pass
-
-
 @app.route('/login/user')
 def login_user():
     pass
@@ -121,22 +92,46 @@ def logout():
 @app.route('/project/approve')
 @decorator.managed_session()
 def project_approve(project_id):
+    """ プロジェクト承認 """
     project = Project.query.get(project_id)
     if project is None:
         return render_template('admin/project_list.html', project=None)
     project.is_approval = 1
     project.public_status = 2
     db.session.add(project)
+    db.session.commit()
+
+    # TODO 承認後　メール送信
+
     return render_template('admin/project_list.html', project=project)
 
 
 @app.route('/project/<int:project_id>/delete', methods=['DELETE'])
 @decorator.managed_session()
 def project_delete(project_id):
-    project = Project.query.get(project_id)
-    if project is None:
+    """ プロジェクト削除 """
+    project_ = Project.query.filter_by(id=project_id, is_delete=0).scalar()
+    if project_ is None:
         return render_template('project_list.html', project=None)
-    db.session.delete(project)
+
+    reports_ = ProjectReport.query.filter_by(project_id=project_id).all()
+    for report in reports_: db.session.delete(report)
+
+    faqs_ = ProjectFaq.query.filter_by(project_id=project_id).all()
+    for faq in faqs_: db.session.delete(faq)
+
+    items_ = ProjectItem.query.filter_by(project_id=project_id, is_delete=0).all()
+    if items_:
+        for item in items_:
+            questions_ = ItemQuestion.query.filter_by(project_item_id=item.id, is_delete=0).all()
+            for question in questions_:
+                question.is_delete = 1
+                db.session.add(question)
+            item.is_delete = 1
+            db.session.add(item)
+    project_.is_delete = 1
+    db.session.add(project_)
+    db.session.commit()
     return render_template('admin/project_list.html', project=project)
 
 
@@ -172,6 +167,8 @@ def project_status_edit(project_id):
         if request.form['password']:
             user.password=request.form['password']
         db.session.add(project)
+        db.session.commit()
+
         return redirect(url_for('/admin/users/%s' % user_id))
     return render_template('admin/user_edit.html', user=user)
 
@@ -179,12 +176,49 @@ def project_status_edit(project_id):
 @app.route('/project/<int:project_id>/edit', methods=['POST'])
 @decorator.managed_session()
 def project_edit():
+    """ プロジェクトイメージを更新している """
     pass
 
 
 @app.route('/project/end/list')
 def project_end_list():
-    pass
+    """ プロジェクト終了リスト """
+    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
+
+    # project_list_ = AbstractParts(engine)
+    # print(project_list_)
+
+
+    print(request.form)
+
+    parts = eval('ProjectList')
+    project_list_ = parts(engine)
+
+    project_list_.select()
+    project_list_.from_table()
+    project_list_.where_keyword(request.form)
+
+    print(project_list_.query)
+
+
+
+    return render_template('admin/project_list.html', project=None)
+    # query = select(columns_project_list())
+    # outerjoin_ = outerjoin_project_list()
+
+
+    # query = query.select_from(outerjoin_)
+
+    # query = where_project_id(query, request.form)
+    # query = where_keyword(query, request.form)
+    # query = where_public_status(query, request.form)
+    # query = where_project_memo_status(query, request.form)
+    # query = group_by_project_list(query)
+    # query = having_target_status(query, request.form)
+    # project_ = db.session.execute(query)
+    # if project_ is None:
+    #     return render_template('admin/project_list.html', project=None)
+    # return render_template('admin/project_list.html', project=project_)
 
 
 @app.route('/project/no_approve/list')
@@ -192,13 +226,32 @@ def project_no_approve_list():
     pass
 
 
-@app.route('/project/list')
+@app.route('/project/list', methods=['GET', 'POST'])
 def project_list():
-    basic_form = ProjectBasicForm(request.form)
-    project_ = converter.project_form_to_api_project(basic_form)
-    projects = Project.query.filter_by(is_approval=project_.is_approval).order_by(Project.reg_datetime.desc()).limit(10).all()
-    return render_template('admin/project_list.html', project=project_)
+    # basic_form = ProjectBasicForm(request.form)
+    # project_ = converter.project_form_to_api_project(basic_form)
 
+    print(request.form)
+    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
+    parts = eval('ProjectList')
+    project_list_ = parts(engine)
+    project_list_.select()
+    project_list_.from_table()
+    project_list_.where_keyword(request.form)
+    project_list_.where_public_status(request.form)
+    project_list_.where_end_datetime(request.form)
+    project_list_.where_project_memo_status(request.form)
+    project_list_.group_by()
+    project_list_.having_target_status(request.form)
+    print(project_list_.query)
+
+
+    return render_template('admin/project_list.html', project=None)
+
+    # project_ = db.session.execute(query)
+    # if project_ is None:
+    #     return render_template('admin/project_list.html', project=None)
+    # return render_template('admin/project_list.html', project=project_)
 
 @app.route('/project/memo/detail')
 def project_memo_detal():
