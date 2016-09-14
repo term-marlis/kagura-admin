@@ -4,20 +4,29 @@
   <h2>最近の未承認プロジェクト</h2>
 
 
-  <h2>{{ 'Edit User' if user else 'Add User'}}</h2>
+  <h2>{{ 'Edit Project' if projects else 'Add Project'}}</h2>
   <form action="/project/list" method="post">
     <dl>
-      <dt>メール(*):
-      <dd><input type=text size=20 name=login_email value="{{ input_login_email if input_login_email }}">
-      <dt>ロール:
-      <dd><input type=text size=20 name=role value="{{ input_role if input_role }}">
+      <dt>ID:
+      <dd><input type=text size=20 name=project_id value="{{ input_project_id if input_project_id }}">
+      <dt>ピックアップ:
+      <dd><input name="project_is_pickup" value="{{ input_project_is_pickup if input_project_is_pickup }}" id="project_is_pickup_id" type="checkbox">
+      <dt>話題のプロジェクト:
+      <dd><input name="project_popular_order" value="{{ input_project_popular_order if input_project_popular_order }}" id="project_popular_order_id" type="checkbox">
 
-        <dt>キーワード(*):
-        <dd><input type=text size=20 name=keyword value="{{ input_keyword if input_keyword }}">
+      <dt>プロジェクトの種類:
+        <input name="project_type" value="1" id="project_type_id_1" type="radio">
+        <label for="project_type_id_1">実施確約型</label>
+        <input name="project_type" value="2" id="project_type_id_2" type="radio">
+        <label for="project_type_id_2">チャレンジ型</label>
+        <input name="project_type" value="3" id="project_type_id_3" type="radio">
+        <label for="project_type_id_3">プレオーダー型</label>
 
-          <dt>公開ステータス(*):
-          <dd><input type=text size=20 name=project_target_status value="{{ input_project_target_status if input_project_target_status }}">
+      <dt>キーワード(*):
+      <dd><input type=text size=20 name=project_keyword value="{{ input_keyword if input_keyword }}">
 
+      <dt>公開ステータス(*):
+      <dd><input type=text size=20 name=project_target_status value="{{ input_project_target_status if input_project_target_status }}">
       <dd><input type=submit value='検索'>
     </dl>
   </form>
@@ -27,22 +36,28 @@
 		<thead>
 			<tr>
 				<th>ID</th>
-				<th>ロール</th>
-        <th>名前</th>
-        <th>メール</th>
-        <th>ダウンロード権限</th>
+				<th>タイトル</th>
+        <th>公開ステータス</th>
+        <th>目標ステータス</th>
+        <th>承認ステータス</th>
+        <th>目標金額</th>
+        <th>人気順</th>
+        <th>サポート金額</th>
 			</tr>
 		</thead>
 
 		<tbody>
-		{% if admins %}
-			{% for admin in admins %}
+		{% if projects %}
+			{% for project in projects %}
 			<tr>
-				<td><a href="{{ url_for('admin_delete', admin_id=admin.id) }}">edit</a><a href="{{ url_for('admin_edit', admin_id=admin.id) }}">del</a>{{ admin.id }}</td>
-        <td>{{ admin.role }}</td>
-				<td>{{ admin.name }}</td>
-        <td>{{ admin.login_email }}</td>
-        <td>{{ admin.download_permission }}</td>
+        <td><a href="{{ url_for('project_edit', project_id=project.project_id) }}">edit</a> <a href="{{ url_for('project_delete', _method='DELETE', project_id=project.project_id) }}">del</a>{{ project.project_id }}</td>
+        <td>{{ project.project_title }}</td>
+				<td>{{ project.project_public_status }}</td>
+        <td>{{ project.project_target_status }}</td>
+        <td>{{ project.project_is_approval }}</td>
+        <td>{{ project.project_target_amount }}</td>
+        <td>{{ project.project_popular_order }}</td>
+        <td>{{ project.user_support_amount }}</td>
 			</tr>
 			{% endfor %}
 		{% else %}
@@ -50,5 +65,4 @@
 		</tbody>
 	</table>
 
-  <a href="{{ url_for('user_create') }}">create user</a>
 {% endblock body %}

@@ -34,29 +34,9 @@ class AbstractParts(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def where_project_id(self, form):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def where_keyword(self, form):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def where_public_status(self, form):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def where_end_datetime(self, form):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def where_project_memo_status(self, form):
+    def where(self, form):
         raise NotImplementedError()
 
     @abstractmethod
     def group_by(self):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def having_target_status(self, form):
         raise NotImplementedError()
