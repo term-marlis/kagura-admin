@@ -39,6 +39,8 @@ class ProjectEndList(AbstractParts):
         if request_form:
             print(request_form)
             for key in request_form.keys():
+                if key == 'list_type':
+                    continue
                 if key.count('project_end_datime'):
                     key = str('project_end_datime')
                 eval('self.where_' + str(key) + '(form)')

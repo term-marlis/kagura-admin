@@ -25,6 +25,7 @@ class ProjectWaitingList(AbstractParts):
             )
         )
 
+
     def where(self, form):
         self.query = self.query.where(self.pt.c.project_is_delete==0)
         self.query = self.query.where(self.pt.c.project_is_approval==1)
@@ -33,6 +34,8 @@ class ProjectWaitingList(AbstractParts):
         if request_form:
             print(request_form)
             for key in request_form.keys():
+                if key == 'list_type':
+                    continue
                 if key.count('project_start_datime'):
                     key = str('project_start_datime')
                 eval('self.where_' + str(key) + '(form)')

@@ -32,6 +32,7 @@ class ProjectList(AbstractParts):
             )
         )
 
+
     def where(self, form):
         self.query = self.query.where(self.pt.c.project_is_delete==0)
         self.query = self.query.where(self.pt.c.project_public_status==2)
@@ -40,6 +41,8 @@ class ProjectList(AbstractParts):
         if request_form:
             print(request_form)
             for key in request_form.keys():
+                if key == 'list_type':
+                    continue
                 eval('self.where_' + str(key) + '(form)')
 
 

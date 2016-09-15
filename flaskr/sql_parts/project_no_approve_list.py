@@ -30,11 +30,13 @@ class ProjectNoApproveList(AbstractParts):
     def where(self, form):
         self.query = self.query.where(self.pt.c.project_is_delete==0)
         self.query = self.query.where(self.pt.c.project_is_approval==0)
-        
+
         request_form = form.to_dict()
         if request_form:
             print(request_form)
             for key in request_form.keys():
+                if key == 'list_type':
+                    continue
                 if key.count('project_reg_datetime'):
                     key = str('project_reg_datetime')
                 eval('self.where_' + str(key) + '(form)')

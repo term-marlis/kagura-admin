@@ -29,6 +29,7 @@ class ProjectUnSuccessList(AbstractParts):
             )
         )
 
+
     def where(self, form):
         self.query = self.query.where(self.pt.c.project_is_delete==0)
         self.query = self.query.where(self.pt.c.project_is_approval==1)
@@ -36,11 +37,12 @@ class ProjectUnSuccessList(AbstractParts):
         self.query = self.query.where(text('pt.project_start_datetime <= now()'))
         self.query = self.query.having(text('(sum(ust.user_support_amount) < pt.project_target_amount or sum(ust.user_support_amount) is null)'))
 
-
         request_form = form.to_dict()
         if request_form:
             print(request_form)
             for key in request_form.keys():
+                if key == 'list_type':
+                    continue
                 if key.count('project_start_datime'):
                     key = str('project_start_datime')
                 eval('self.where_' + str(key) + '(form)')

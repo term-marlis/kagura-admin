@@ -279,6 +279,14 @@ def project_un_success_list():
 @app.route('/project/end/list')
 def project_end_list():
     """ プロジェクト終了リスト """
+
+    projects = _list()
+    if projects is None:
+        return render_template('admin/project_list.html', projects=None)
+    return render_template('admin/project_list.html', projects=projects)
+
+
+def _list():
     engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
     parts = eval('ProjectEndList')
     project_list_ = parts(engine)
@@ -288,9 +296,6 @@ def project_end_list():
     project_list_.group_by()
     print(project_list_.query)
     projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
 
 
 @app.route('/project/memo/detail')

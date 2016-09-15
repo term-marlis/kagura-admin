@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <h2>プロジェクト一覧</h2>
+  <h2>募集終了プロジェクト一覧</h2>
 
 
   <h2>{{ 'Edit Project' if projects else 'Add Project'}}</h2>
@@ -25,31 +25,9 @@
       <dt>キーワード(*):
       <dd><input type=text size=20 name=project_keyword value="{{ input_keyword if input_keyword }}">
 
-        <dd>
-        							<select name="project_public_status" id="project_public_status_id">
-        	<option value="">全て</option>
-        	<option value="1">公開待ち</option>
-        	<option value="2,3">公開中</option>
-        	<option value="4">非公開 </option>
-        	<option value="5">削除</option>
-        </select>
-        							<label for="search_project_target_status" class="gray">達成状況</label>
-        							<select name="project_target_status" id="search_project_target_status">
-        	<option value="">全て</option>
-        	<option value="1">不成立</option>
-        	<option value="2">成立</option>
-        	<option value="3">達成</option>
-        	<option value="4">募集中</option>
-        </select>
-        							<label for="search_project_is_approval" class="gray">承認</label>
-        							<select name="project_is_approval" id="search_project_is_approval">
-        	<option value="">全て</option>
-        	<option value="0">未承認</option>
-        	<option value="1">承認済</option>
-        	<option value="2">非承認</option>
-        </select>
-
-        <input type="hidden" name="list_type" value="ProjectList">
+      <dt>公開ステータス(*):
+      <dd><input type=text size=20 name=project_target_status value="{{ input_project_target_status if input_project_target_status }}">
+        <input type="hidden" name="list_type" value="ProjectEndList">
       <dd><input type=submit value='検索'>
     </dl>
   </form>
