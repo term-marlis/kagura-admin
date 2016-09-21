@@ -2,10 +2,17 @@ from flask import request, redirect, url_for, render_template, flash, abort, \
         jsonify
 from flaskr import app, db
 from flaskr.models import User, Project, Information, Admin
-from flaskr import converter
+from flaskr import converter, utils
 from flaskr.form import ProjectBasicForm
-from flaskr import decorator
+from flaskr.form import ProjectListForm
+from flaskr.form import ProjectEndListForm
+from flaskr.form import ProjectNoApproveListForm
+from flaskr.form import ProjectWaitingListForm
+from flaskr.form import ProjectRunningListForm
+from flaskr.form import ProjectSuccessListForm
+from flaskr.form import ProjectUnSuccessListForm
 
+from flaskr import decorator
 from flask import current_app
 from sqlalchemy.sql import select
 
@@ -13,10 +20,10 @@ from flaskr.sql_parts.abstract_parts import AbstractParts
 from flaskr.sql_parts.project_list import ProjectList
 from flaskr.sql_parts.project_end_list import ProjectEndList
 from flaskr.sql_parts.project_no_approve_list import ProjectNoApproveList
+from flaskr.sql_parts.project_waiting_list import ProjectWaitingList
 from flaskr.sql_parts.project_running_list import ProjectRunningList
 from flaskr.sql_parts.project_success_list import ProjectSuccessList
 from flaskr.sql_parts.project_un_success_list import ProjectUnSuccessList
-from flaskr.sql_parts.project_waiting_list import ProjectWaitingList
 
 
 @app.route('/')
@@ -107,8 +114,6 @@ def project_approve(project_id):
 def project_delete(project_id):
     """ プロジェクト削除 """
 
-
-    print('+'*100)
     project_ = Project.query.filter_by(id=project_id, is_delete=0).scalar()
     if project_ is None:
         return render_template('project_list.html', project=None)
@@ -171,124 +176,102 @@ def project_status_edit(project_id):
         return redirect(url_for('/admin/users/%s' % user_id))
     return render_template('admin/user_edit.html', user=user)
 
-
 @app.route('/project/<int:project_id>/edit', methods=['POST'])
 @decorator.managed_session()
 def project_edit():
     """ プロジェクトイメージを更新している """
     pass
 
-
 @app.route('/project/list', methods=['GET', 'POST'])
 def project_list():
-    # basic_form = ProjectBasicForm(request.form)
-    # project_ = converter.project_form_to_api_project(basic_form)
-    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectList')
-    project_list_ = parts(engine)
-    project_list_.select()
-    project_list_.from_table()
-    project_list_.where(request.form)
-    project_list_.group_by()
-    print(project_list_.query)
-    projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
+    """ プロジェクト一覧 """
+    project_form = ProjectListForm(request.form, csrf_enabled=False)
+    # if project_form.validate_on_submit():
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if not projects is None:
+            return render_template('admin/project_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_list.html', projects=None, project_form=project_form)
 
-
-@app.route('/project/no_approve/list')
+@app.route('/project/no_approve/list', methods=['GET', 'POST'])
 def project_no_approve_list():
-    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectNoApproveList')
-    project_list_ = parts(engine)
-    project_list_.select()
-    project_list_.from_table()
-    project_list_.where(request.form)
-    project_list_.group_by()
-    print(project_list_.query)
-    projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
+    """ プロジェクト未承認一覧 """
+    project_form = ProjectNoApproveListForm(request.form, csrf_enabled=False)
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if not projects is None:
+            return render_template('admin/project_no_approve_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_no_approve_list.html', projects=None, project_form=project_form)
 
-
-@app.route('/project/waiting/list')
+@app.route('/project/waiting/list', methods=['GET', 'POST'])
 def project_waiting_list():
-    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectWaitingList')
-    project_list_ = parts(engine)
-    project_list_.select()
-    project_list_.from_table()
-    project_list_.where(request.form)
-    project_list_.group_by()
-    print(project_list_.query)
-    projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
+    """ プロジェクト開始待ち一覧 """
+    project_form = ProjectWaitingListForm(request.form, csrf_enabled=False)
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if not projects is None:
+            return render_template('admin/project_waiting_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_waiting_list.html', projects=None, project_form=project_form)
 
-
-@app.route('/project/running/list')
+@app.route('/project/running/list', methods=['GET', 'POST'])
 def project_running_list():
-    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectRunningList')
-    project_list_ = parts(engine)
-    project_list_.select()
-    project_list_.from_table()
-    project_list_.where(request.form)
-    project_list_.group_by()
-    print(project_list_.query)
-    projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
+    """ プロジェクト進行中一覧 """
+    project_form = ProjectRunningListForm(request.form, csrf_enabled=False)
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if not projects is None:
+            return render_template('admin/project_running_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_running_list.html', projects=None, project_form=project_form)
 
-
-@app.route('/project/success/list')
+@app.route('/project/success/list', methods=['GET', 'POST'])
 def project_success_list():
-    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectSuccessList')
-    project_list_ = parts(engine)
-    project_list_.select()
-    project_list_.from_table()
-    project_list_.where(request.form)
-    project_list_.group_by()
-    print(project_list_.query)
-    projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
+    """ プロジェクト進行中一覧（目標達成） """
+    project_form = ProjectSuccessListForm(request.form, csrf_enabled=False)
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if not projects is None:
+            return render_template('admin/project_success_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_success_list.html', projects=None, project_form=project_form)
 
-
-@app.route('/project/un_success/list')
+@app.route('/project/un_success/list', methods=['GET', 'POST'])
 def project_un_success_list():
-    engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectUnSuccessList')
-    project_list_ = parts(engine)
-    project_list_.select()
-    project_list_.from_table()
-    project_list_.where(request.form)
-    project_list_.group_by()
-    print(project_list_.query)
-    projects = db.session.execute(project_list_.query)
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
+    """ プロジェクト進行中一覧（目標未達） """
+    project_form = ProjectUnSuccessListForm(request.form, csrf_enabled=False)
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if projects is None:
+            return render_template('admin/project_un_success_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_un_success_list.html', projects=None, project_form=project_form)
 
-@app.route('/project/end/list')
+@app.route('/project/end/list', methods=['GET', 'POST'])
 def project_end_list():
     """ プロジェクト終了リスト """
-
-    projects = _list()
-    if projects is None:
-        return render_template('admin/project_list.html', projects=None)
-    return render_template('admin/project_list.html', projects=projects)
-
+    project_form = ProjectEndListForm(request.form, csrf_enabled=False)
+    # if project_form.validate_on_submit():
+    if 'list_type' in request.form or 'list_type' in request.args:
+        projects = _list()
+        if not projects is None:
+            return render_template('admin/project_end_list.html', projects=projects, project_form=project_form)
+    # utils.flash_errors(project_form)
+    return render_template('admin/project_end_list.html', projects=None, project_form=project_form)
 
 def _list():
+    """ 一覧共通処理 """
     engine = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-    parts = eval('ProjectEndList')
+
+    list_type = None
+    if 'list_type' in request.form:
+        list_type = request.form['list_type']
+    elif 'list_type' in request.args:
+        list_type = request.args['list_type']
+
+    parts = eval(list_type)
     project_list_ = parts(engine)
     project_list_.select()
     project_list_.from_table()
@@ -296,7 +279,7 @@ def _list():
     project_list_.group_by()
     print(project_list_.query)
     projects = db.session.execute(project_list_.query)
-
+    return projects
 
 @app.route('/project/memo/detail')
 def project_memo_detal():
@@ -307,8 +290,6 @@ def project_memo_detal():
 @decorator.managed_session()
 def project_republic():
     pass
-
-
 
 
 @app.route('/project/support/edit', methods=['POST'])

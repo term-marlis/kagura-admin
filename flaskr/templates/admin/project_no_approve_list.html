@@ -1,37 +1,20 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <h2>募集終了プロジェクト一覧</h2>
-
-
-  <h2>{{ 'Edit Project' if projects else 'Add Project'}}</h2>
-  <form action="/project/list" method="post">
+  <h2>未承認プロジェクト一覧</h2>
+  <form action="/project/no_approve/list" method="post">
     <dl>
-      <dt>ID:
-      <dd><input type=text size=20 name=project_id value="{{ input_project_id if input_project_id }}">
-      <dt>ピックアップ:
-      <dd><input name="project_is_pickup" value="{{ input_project_is_pickup if input_project_is_pickup }}" id="project_is_pickup_id" type="checkbox">
-      <dt>話題のプロジェクト:
-      <dd><input name="project_popular_order" value="{{ input_project_popular_order if input_project_popular_order }}" id="project_popular_order_id" type="checkbox">
-
-      <dt>プロジェクトの種類:
-        <input name="project_type" value="1" id="project_type_id_1" type="radio">
-        <label for="project_type_id_1">実施確約型</label>
-        <input name="project_type" value="2" id="project_type_id_2" type="radio">
-        <label for="project_type_id_2">チャレンジ型</label>
-        <input name="project_type" value="3" id="project_type_id_3" type="radio">
-        <label for="project_type_id_3">プレオーダー型</label>
-
-      <dt>キーワード(*):
+      <dt><label for="project_keyword">キーワード(*)</label>
       <dd><input type=text size=20 name=project_keyword value="{{ input_keyword if input_keyword }}">
-
-      <dt>公開ステータス(*):
-      <dd><input type=text size=20 name=project_target_status value="{{ input_project_target_status if input_project_target_status }}">
-        <input type="hidden" name="list_type" value="ProjectEndList">
+      <dd style="word-break: break-all;">
+        <label for="project_reg_datetime">申請日</label>
+        <input name="project_reg_datetime_min" class="datepicker hasDatepicker" id="project_reg_datetime_min_id" type="text">
+        							～
+        <input name="project_reg_datetime_max" class="datepicker hasDatepicker" id="project_reg_datetime_max_id" type="text">
+      <input type="hidden" name="list_type" value="ProjectNoApproveList">
       <dd><input type=submit value='検索'>
     </dl>
   </form>
-
 
 	<table class="sheet">
 		<thead>
@@ -65,5 +48,12 @@
 		{% endif %}
 		</tbody>
 	</table>
+  <a href="/project/list?list_type=ProjectList">プロジェクト一覧</a><br/>
+  <a href="/project/no_approve/list?list_type=ProjectNoApproveList">プロジェクト未承認一覧</a><br/>
+  <a href="/project/waiting/list?list_type=ProjectWaitingList">プロジェクト開始待ち一覧</a><br/>
+  <a href="/project/running/list?list_type=ProjectRunningList">プロジェクト進行中一覧</a><br/>
+  <a href="/project/success/list?list_type=ProjectSuccessList">プロジェクト目標達成一覧</a><br/>
+  <a href="/project/un_success/list?list_type=ProjectUnSuccessList">プロジェクト未達一覧</a><br/>
+  <a href="/project/end/list?list_type=ProjectEndList">プロジェクト終了一覧</a><br/>
 
 {% endblock body %}

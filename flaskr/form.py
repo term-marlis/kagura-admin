@@ -182,27 +182,66 @@ class PasswordResetForm(Form):
     submit = SubmitField('Reset')
 
 
+class ProjectListForm(Form):
+    """プロジェクト一覧"""
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_title = StringField('プロジェクトタイトル', validators=[DataRequired(message='プロジェクトタイトルを入力してください')])
+
+class ProjectEndListForm(Form):
+    """プロジェクト終了一覧"""
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_title = StringField('プロジェクトタイトル', validators=[DataRequired(message='プロジェクトタイトルを入力してください')])
+
+class ProjectNoApproveListForm(Form):
+    """プロジェクト未承認一覧"""
+    project_keyword = StringField('キーワード', validators=[DataRequired(message='キーワードを入力してください')])
+    project_reg_datetime_min = DateField('申請日から', validators=[], default=(datetime.today() + timedelta(days=7)).date())
+    project_reg_datetime_max = DateField('申請日まで', validators=[], default=(datetime.today() + timedelta(days=7)).date())
+
+class ProjectWaitingListForm(Form):
+    """プロジェクト未承認一覧"""
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_keyword = StringField('キーワード', validators=[DataRequired(message='キーワードを入力してください')])
+
+class ProjectRunningListForm(Form):
+    """プロジェクト進行中一覧"""
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_keyword = StringField('キーワード', validators=[DataRequired(message='キーワードを入力してください')])
+
+class ProjectSuccessListForm(Form):
+    """プロジェクト進行中一覧(目標達成)"""
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_keyword = StringField('キーワード', validators=[DataRequired(message='キーワードを入力してください')])
+
+class ProjectUnSuccessListForm(Form):
+    """プロジェクト進行中一覧(目標未達)"""
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_keyword = StringField('キーワード', validators=[DataRequired(message='キーワードを入力してください')])
+
+
 class ProjectBasicForm(Form):
     """プロジェクト: 基本情報"""
-    title = StringField('タイトル', validators=[DataRequired('タイトルを入力してください')])
-    summary = TextAreaField('概要', validators=[DataRequired('概要を入力してください')])
-    type = SelectField('タイプ', validators=[DataRequired()], coerce=int,
-                       choices=[(1, '実施確約型'), (2, 'チャレンジ型'), (3, 'プレオーダー型'), ])
-    target_amount = IntegerField('目標金額', default=1000000,
-                                 validators=[
-                                     DataRequired('目標金額を入力してください'),
-                                     NumberRange(min=1, max=999999999,
-                                                 message='目標金額は1〜999,999,999円で設定してください')
-                                 ])
-    open_amount = BooleanField('表示する', validators=[], default=True)
-    start_date = DateField('開始日', validators=[], default=(datetime.today() + timedelta(days=7)).date())
-    start_time = TimeField('開始時刻', validators=[], default=time(22, 0, 0, 0))
-    end_date = DateField('終了日', validators=[], default=(datetime.today() + timedelta(days=87)).date())
-    end_time = TimeField('終了時刻', validators=[], default=time(22, 0, 0, 0))
-    main_color = SelectField('メインカラー', validators=[], coerce=str, choices=[('white', '白'), ('black', '黒'), ])
-    accent_color = ColorField('アクセントカラー', validators=[], default=Color('#c5ac69'))
-    image = FileField('画像', validators=[])
-    submit = SubmitField('保存')
+    project_id = IntegerField('プロジェクトID', validators=[DataRequired('IDを入力してください')])
+    project_title = StringField('プロジェクトタイトル', validators=[DataRequired(message='プロジェクトタイトルを入力してください')])
+
+    # summary = TextAreaField('概要', validators=[DataRequired('概要を入力してください')])
+    # project_title = SelectField('プロジェクトタイトル', validators=[DataRequired()], coerce=int,
+    #                    choices=[(1, '実施確約型'), (2, 'チャレンジ型'), (3, 'プレオーダー型'), ])
+    # target_amount = IntegerField('目標金額', default=1000000,
+    #                              validators=[
+    #                                  DataRequired('目標金額を入力してください'),
+    #                                  NumberRange(min=1, max=999999999,
+    #                                              message='目標金額は1〜999,999,999円で設定してください')
+    #                              ])
+    # open_amount = BooleanField('表示する', validators=[], default=True)
+    # start_date = DateField('開始日', validators=[], default=(datetime.today() + timedelta(days=7)).date())
+    # start_time = TimeField('開始時刻', validators=[], default=time(22, 0, 0, 0))
+    # end_date = DateField('終了日', validators=[], default=(datetime.today() + timedelta(days=87)).date())
+    # end_time = TimeField('終了時刻', validators=[], default=time(22, 0, 0, 0))
+    # main_color = SelectField('メインカラー', validators=[], coerce=str, choices=[('white', '白'), ('black', '黒'), ])
+    # accent_color = ColorField('アクセントカラー', validators=[], default=Color('#c5ac69'))
+    # image = FileField('画像', validators=[])
+    submit = SubmitField('検索')
 
 
 class ProjectItemForm(Form):

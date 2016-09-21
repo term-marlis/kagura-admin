@@ -2,58 +2,51 @@
 
 {% block body %}
   <h2>プロジェクト一覧</h2>
-
-
-  <h2>{{ 'Edit Project' if projects else 'Add Project'}}</h2>
-  <form action="/project/list" method="post">
+  <form id="project_form" action="/project/list" method="post" enctype="multipart/form-data">
     <dl>
-      <dt>ID:
-      <dd><input type=text size=20 name=project_id value="{{ input_project_id if input_project_id }}">
-      <dt>ピックアップ:
-      <dd><input name="project_is_pickup" value="{{ input_project_is_pickup if input_project_is_pickup }}" id="project_is_pickup_id" type="checkbox">
-      <dt>話題のプロジェクト:
-      <dd><input name="project_popular_order" value="{{ input_project_popular_order if input_project_popular_order }}" id="project_popular_order_id" type="checkbox">
-
-      <dt>プロジェクトの種類:
+      <dt><label for="project_id">プロジェクトID</label>
+      <dd><input type=text size=20 id="project_id" name="project_id" value="{{ project_form.project_id.data if project_form.project_id.data }}">
+      <dt><label for="project_is_pickup">ピックアップ</label>
+      <dd><input type="checkbox" id="project_is_pickup" name="project_is_pickup" value="{{ input_project_is_pickup if input_project_is_pickup }}">
+      <dt><label for="project_popular_order">話題のプロジェクト</label>
+      <dd><input type="checkbox" id="project_popular_order" name="project_popular_order" value="{{ input_project_popular_order if input_project_popular_order }}">
+      <dt><label for="project_type">プロジェクトの種類</label>
         <input name="project_type" value="1" id="project_type_id_1" type="radio">
         <label for="project_type_id_1">実施確約型</label>
         <input name="project_type" value="2" id="project_type_id_2" type="radio">
         <label for="project_type_id_2">チャレンジ型</label>
         <input name="project_type" value="3" id="project_type_id_3" type="radio">
         <label for="project_type_id_3">プレオーダー型</label>
-
-      <dt>キーワード(*):
+      <dt><label for="project_keyword">キーワード(*)</label>
       <dd><input type=text size=20 name=project_keyword value="{{ input_keyword if input_keyword }}">
-
-        <dd>
-        							<select name="project_public_status" id="project_public_status_id">
+      <dd>
+        <label for="search_project_public_status">公開ステータス</label>
+        <select name="project_public_status" id="project_public_status">
         	<option value="">全て</option>
         	<option value="1">公開待ち</option>
         	<option value="2,3">公開中</option>
         	<option value="4">非公開 </option>
         	<option value="5">削除</option>
         </select>
-        							<label for="search_project_target_status" class="gray">達成状況</label>
-        							<select name="project_target_status" id="search_project_target_status">
+        <label for="search_project_target_status" class="gray">達成状況</label>
+        <select name="project_target_status" id="search_project_target_status">
         	<option value="">全て</option>
         	<option value="1">不成立</option>
         	<option value="2">成立</option>
         	<option value="3">達成</option>
         	<option value="4">募集中</option>
         </select>
-        							<label for="search_project_is_approval" class="gray">承認</label>
-        							<select name="project_is_approval" id="search_project_is_approval">
+        <label for="search_project_is_approval" class="gray">承認</label>
+        <select name="project_is_approval" id="search_project_is_approval">
         	<option value="">全て</option>
         	<option value="0">未承認</option>
         	<option value="1">承認済</option>
         	<option value="2">非承認</option>
         </select>
-
         <input type="hidden" name="list_type" value="ProjectList">
       <dd><input type=submit value='検索'>
     </dl>
   </form>
-
 
 	<table class="sheet">
 		<thead>
@@ -87,5 +80,12 @@
 		{% endif %}
 		</tbody>
 	</table>
+  <a href="/project/list?list_type=ProjectList">プロジェクト一覧</a><br/>
+  <a href="/project/no_approve/list?list_type=ProjectNoApproveList">プロジェクト未承認一覧</a><br/>
+  <a href="/project/waiting/list?list_type=ProjectWaitingList">プロジェクト開始待ち一覧</a><br/>
+  <a href="/project/running/list?list_type=ProjectRunningList">プロジェクト進行中一覧</a><br/>
+  <a href="/project/success/list?list_type=ProjectSuccessList">プロジェクト目標達成一覧</a><br/>
+  <a href="/project/un_success/list?list_type=ProjectUnSuccessList">プロジェクト未達一覧</a><br/>
+  <a href="/project/end/list?list_type=ProjectEndList">プロジェクト終了一覧</a><br/>
 
 {% endblock body %}

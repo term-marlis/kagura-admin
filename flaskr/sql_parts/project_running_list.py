@@ -43,32 +43,27 @@ class ProjectRunningList(AbstractParts):
             for key in request_form.keys():
                 if key == 'list_type':
                     continue
-                if key.count('project_start_datime'):
-                    key = str('project_start_datime')
+                if key.count('project_start_datetime'):
+                    key = str('project_start_datetime')
                 eval('self.where_' + str(key) + '(form)')
-
 
     def where_project_id(self, form):
         if 'project_id' in form and form['project_id']:
             self.query = self.query.where(self.pt.c.project_id==form['project_id'])
 
-
     def where_project_type(self, form):
         if 'project_type' in form and form['project_type']:
             self.query = self.query.where(self.pt.c.project_type==form['project_type'])
 
-
-    def where_project_start_datime(self, form):
+    def where_project_start_datetime(self, form):
         if 'project_start_datetime_min' in form and form['project_start_datetime_min']:
             self.query = self.query.where(self.pt.c.project_end_datetime >= form['project_start_datetime_min'])
         if 'project_start_datetime_max' in form and form['project_start_datetime_max']:
             self.query = self.query.where(self.pt.c.project_end_datetime < form['project_start_datetime_max'])
 
-
     def where_project_public_status(self, form):
         if 'project_public_status' in form and form['project_public_status']:
             self.query = self.query.where(self.pt.c.project_public_status==form['project_public_status'])
-
 
     def where_project_target_status(self, form):
         if 'project_target_status' in form and form['project_target_status']:
@@ -79,12 +74,10 @@ class ProjectRunningList(AbstractParts):
             if form['project_target_status'] == '4':
                 self.query = self.query.having(func.sum(self.ust.c.user_support_amount) >= self.pt.c.project_target_amount)
 
-
     def where_project_keyword(self, form):
         if 'project_keyword' in form and form['project_keyword']:
             keyword = str('%' + form['project_keyword'] + '%')
             self.query = self.query.where(or_(self.pt.c.project_title.like(keyword), self.pt.c.project_detail.like(keyword), self.pt.c.project_summary.like(keyword)))
-
 
     def group_by(self):
         self.query = self.query.group_by(self.pt.c.project_id,
